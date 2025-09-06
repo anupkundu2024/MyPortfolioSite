@@ -5,17 +5,17 @@ export function Footer() {
     {
       name: 'GitHub',
       icon: <Github className="w-5 h-5" />,
-      url: 'https://github.com/anurag'
+      url: 'https://github.com/anup'
     },
     {
       name: 'LinkedIn',
       icon: <Linkedin className="w-5 h-5" />,
-      url: 'https://linkedin.com/in/anurag'
+      url: 'https://linkedin.com/in/anup'
     },
     {
       name: 'Twitter',
       icon: <Twitter className="w-5 h-5" />,
-      url: 'https://twitter.com/anurag'
+      url: 'https://twitter.com/anup'
     }
   ];
 
@@ -25,7 +25,7 @@ export function Footer() {
         <div className="flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="text-center md:text-left">
             <p className="text-muted-foreground">
-              © 2024 Anurag. All rights reserved.
+              © 2024 Anup. All rights reserved.
             </p>
             <p className="text-sm text-muted-foreground/70">
               Built with React, Three.js & lots of ☕

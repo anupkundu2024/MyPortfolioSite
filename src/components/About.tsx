@@ -37,7 +37,7 @@ export function About() {
           >
             <h3 className="text-2xl font-bold mb-6 text-gradient">My Journey</h3>
             <p className="text-lg leading-relaxed text-muted-foreground mb-6">
-              I'm a passionate front-end developer with 3+ years of experience building modern web applications. 
+              I'm a passionate full stack developer with 3+ years of experience building modern web applications. 
               I love creating seamless user experiences that combine beautiful design with robust functionality.
             </p>
             <p className="text-lg leading-relaxed text-muted-foreground">
