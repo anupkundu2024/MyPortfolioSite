@@ -21,10 +21,10 @@ export function Hero() {
           <div className="space-y-4">
             <h1 className="text-5xl md:text-7xl font-bold">
               Hi, I'm{' '}
-              <span className="text-gradient">Anurag</span>
+              <span className="text-gradient">Anup</span>
             </h1>
             <h2 className="text-2xl md:text-4xl font-medium text-muted-foreground">
-              Front-End Developer
+              Full Stack Developer
             </h2>
           </div>
           

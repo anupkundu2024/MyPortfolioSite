@@ -45,8 +45,8 @@ export function Contact() {
     {
       icon: <Mail className="w-6 h-6" />,
       label: 'Email',
-      value: 'anurag@example.com',
-      link: 'mailto:anurag@example.com'
+      value: 'anup@example.com',
+      link: 'mailto:anup@example.com'
     },
     {
       icon: <Phone className="w-6 h-6" />,
