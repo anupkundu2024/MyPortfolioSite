@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import { Typewriter } from 'react-simple-typewriter';
 import { ParticleBackground } from './ParticleBackground';
 
 export function Hero() {
@@ -23,8 +24,16 @@ export function Hero() {
               Hi, I'm{' '}
               <span className="text-gradient">Anup</span>
             </h1>
-            <h2 className="text-2xl md:text-4xl font-medium text-muted-foreground">
-              Full Stack Developer
+            <h2 className="text-2xl md:text-4xl font-medium text-muted-foreground min-h-[3rem] md:min-h-[4rem]">
+              <Typewriter
+                words={['Full Stack Developer', 'MERN Stack Developer', 'Web Developer', 'Quick Learner']}
+                loop={0}
+                cursor
+                cursorStyle="|"
+                typeSpeed={70}
+                deleteSpeed={50}
+                delaySpeed={1500}
+              />
             </h2>
           </div>
           
