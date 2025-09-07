@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -44,7 +45,10 @@ export function Navbar() {
           ))}
         </div>
 
-        <button className="md:hidden text-foreground">
+        <button 
+          className="md:hidden text-foreground" 
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+        >
           <svg
             className="w-6 h-6"
             fill="none"
@@ -59,6 +63,31 @@ export function Navbar() {
             />
           </svg>
         </button>
+        
+        {/* Mobile menu */}
+        {mobileMenuOpen && (
+          <div className="absolute top-full left-0 right-0 bg-background/95 backdrop-blur-sm shadow-lg md:hidden py-4 px-6 border-t border-border/40">
+            <div className="flex flex-col space-y-4">
+              {[
+                { name: "Home", id: "home" },
+                { name: "About", id: "about" },
+                { name: "Work", id: "work" },
+                { name: "Contact", id: "contact" },
+              ].map(({ name, id }) => (
+                <button
+                  key={id}
+                  onClick={() => {
+                    scrollToSection(id);
+                    setMobileMenuOpen(false);
+                  }}
+                  className="text-foreground hover:text-primary transition-colors duration-300 font-medium text-left"
+                >
+                  {name}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </nav>
   );

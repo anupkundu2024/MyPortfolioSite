@@ -9,6 +9,11 @@ const skills = [
   { name: "MongoDB", icon: "🍃" },
   { name: "Git", icon: "📦" },
   { name: "Figma", icon: "🎯" },
+  { name: "TailwindCSS", icon: "💨" },
+  { name: "Material UI", icon: "🎨" },
+  { name: "WordPress", icon: "🌐" },
+  { name: "mySql", icon: "🛢️" }
+
 ];
 
 export function About() {
@@ -39,15 +44,10 @@ export function About() {
               My Journey
             </h3>
             <p className="text-lg leading-relaxed text-muted-foreground mb-6">
-              I'm a passionate full stack developer with 3+ years of experience
-              building modern web applications. I love creating seamless user
-              experiences that combine beautiful design with robust
-              functionality.
+            🚀 I'm a passionate Full Stack Developer and a 3rd-year Computer Science Engineering student. I love turning ideas into modern web applications with clean design and efficient functionality.
             </p>
             <p className="text-lg leading-relaxed text-muted-foreground">
-              When I'm not coding, you'll find me exploring new technologies,
-              contributing to open-source projects, or sharing knowledge with
-              the developer community.
+            💡 As a quick learner, I constantly explore new technologies, build projects to sharpen my skills, and stay updated with industry trends. I'm eager to grow, contribute, and collaborate in the developer community.
             </p>
           </motion.div>
 
