@@ -2,27 +2,27 @@ import { motion } from "framer-motion";
 import { ExternalLink, Github } from "lucide-react";
 
 const projects = [
-  {
-    id: 1,
-    title: "E-Commerce Platform",
-    description:
-      "A modern e-commerce solution built with React, Node.js, and MongoDB. Features include real-time inventory, secure payments, and admin dashboard.",
-    image:
-      "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=600&h=400&fit=crop",
-    tags: ["React", "Node.js", "MongoDB", "Stripe"],
-    github: "#",
-    demo: "#",
-  },
+  // {
+  //   id: 1,
+  //   title: "E-Commerce Platform",
+  //   description:
+  //     "A modern e-commerce solution built with React, Node.js, and MongoDB. Features include real-time inventory, secure payments, and admin dashboard.",
+  //   image:
+  //     "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=600&h=400&fit=crop",
+  //   tags: ["React", "Node.js", "MongoDB", "Stripe"],
+  //   github: "#",
+  //   demo: "#",
+  // },
   {
     id: 2,
-    title: "Task Management App",
+    title: "Wanderlust",
     description:
       "Collaborative task management application with real-time updates, drag & drop functionality, and team collaboration features.",
     image:
       "https://images.unsplash.com/photo-1611224923853-80b023f02d71?w=600&h=400&fit=crop",
     tags: ["React", "Socket.io", "Express", "PostgreSQL"],
-    github: "#",
-    demo: "#",
+    github: "https://github.com/anupkundu2024/wanderlust-Project",
+    demo: "https://anupkundu2024.github.io/wanderlust-Project/",
   },
   {
     id: 3,
@@ -32,8 +32,8 @@ const projects = [
     image:
       "https://images.unsplash.com/photo-1504608524841-42fe6f032b4b?w=600&h=400&fit=crop",
     tags: ["JavaScript", "API Integration", "Chart.js"],
-    github: "#",
-    demo: "#",
+    github: "https://github.com/anupkundu2024/weather-app-react/tree/main/mini-project",
+    demo: "https://react-weather-app2025.netlify.app/",
   },
   {
     id: 4,
@@ -109,6 +109,8 @@ export function Work() {
                 <div className="flex gap-4 pt-4">
                   <a
                     href={project.github}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors"
                   >
                     <Github size={20} />
@@ -116,6 +118,8 @@ export function Work() {
                   </a>
                   <a
                     href={project.demo}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors"
                   >
                     <ExternalLink size={20} />
