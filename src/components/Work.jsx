@@ -60,8 +60,8 @@ const projects = [
     image:
       "https://images.unsplash.com/photo-1467232004584-a241de8bcf5d?w=600&h=400&fit=crop",
     tags: ["React", "Three.js", "Framer Motion"],
-    github: "#",
-    demo: "#",
+    github: "https://github.com/anupkundu2024/MyPortfolioSite",
+    demo: "https://anupportfolio2025.vercel.app/",
   },
 ];
 
