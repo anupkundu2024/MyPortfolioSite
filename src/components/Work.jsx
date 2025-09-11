@@ -2,25 +2,41 @@ import { motion } from "framer-motion";
 import { ExternalLink, Github } from "lucide-react";
 
 const projects = [
-  // {
-  //   id: 1,
-  //   title: "E-Commerce Platform",
-  //   description:
-  //     "A modern e-commerce solution built with React, Node.js, and MongoDB. Features include real-time inventory, secure payments, and admin dashboard.",
-  //   image:
-  //     "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=600&h=400&fit=crop",
-  //   tags: ["React", "Node.js", "MongoDB", "Stripe"],
-  //   github: "#",
-  //   demo: "#",
-  // },
+  {
+    id: 1,
+    title: "KunduStocks",
+    description:
+      "A comprehensive trading platform inspired by Zerodha, featuring real-time market data, portfolio tracking, and advanced charting capabilities. Built with modern technologies for seamless trading experience.",
+    image:
+      "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=600&h=400&fit=crop",
+    tags: [
+      "React",
+      "Node.js",
+      "Express js",
+      "MongoDB",
+      "JavaScript",
+      "Full Stack",
+      "MERN stack",
+    ],
+    github: "https://github.com/anupkundu2024/KunduStocks",
+    demo: "https://kundustocks-fronted.netlify.app/",
+    Dashboard: "https://kundustocks-dashboard.netlify.app/",
+  },
   {
     id: 2,
     title: "Wanderlust",
     description:
-      "Collaborative task management application with real-time updates, drag & drop functionality, and team collaboration features.",
+      "A full-stack web app inspired by Airbnb, featuring property listings, booking system, authentication, and a clean modern UI built with MERN stack",
     image:
-      "https://images.unsplash.com/photo-1611224923853-80b023f02d71?w=600&h=400&fit=crop",
-    tags: ["React", "Socket.io", "Express", "PostgreSQL"],
+      "https://plus.unsplash.com/premium_photo-1684338795288-097525d127f0?q=80&w=2071&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    tags: [
+      "MongoDB",
+      "Express.js",
+      "React",
+      "Node.js",
+      "MERN Stack",
+      "React Router",
+    ],
     github: "https://github.com/anupkundu2024/wanderlust-Project",
     demo: "https://anupkundu2024.github.io/wanderlust-Project/",
   },
@@ -31,8 +47,9 @@ const projects = [
       "Beautiful weather application with location-based forecasts, interactive maps, and personalized weather alerts.",
     image:
       "https://images.unsplash.com/photo-1504608524841-42fe6f032b4b?w=600&h=400&fit=crop",
-    tags: ["JavaScript", "API Integration", "Chart.js"],
-    github: "https://github.com/anupkundu2024/weather-app-react/tree/main/mini-project",
+    tags: ["JavaScript", "API Integration", "React"],
+    github:
+      "https://github.com/anupkundu2024/weather-app-react/tree/main/mini-project",
     demo: "https://react-weather-app2025.netlify.app/",
   },
   {
@@ -125,6 +142,17 @@ export function Work() {
                     <ExternalLink size={20} />
                     <span>Live Demo</span>
                   </a>
+                  {project.Dashboard && (
+                    <a
+                      href={project.Dashboard}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors"
+                    >
+                      <ExternalLink size={20} />
+                      <span>Dashboard</span>
+                    </a>
+                  )}
                 </div>
               </div>
             </motion.div>

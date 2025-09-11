@@ -35,6 +35,12 @@ export function Hero() {
                     "MERN Stack Developer",
                     "Web Developer",
                     "Quick Learner",
+                    "Problem Solver",
+                    "Tech Enthusiast",
+                    "Open Source Contributor",
+                    "AI & SaaS Builder",
+                    "Creative Coder",
+                    "Passionate Innovator",
                   ]}
                   loop={0}
                   cursor
