@@ -38,7 +38,7 @@ const projects = [
       "React Router",
     ],
     github: "https://github.com/anupkundu2024/wanderlust-Project",
-    demo: "https://anupkundu2024.github.io/wanderlust-Project/",
+    demo: "https://wanderlust-project-qduj.onrender.com/listings",
   },
   {
     id: 3,
