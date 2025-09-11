@@ -7,6 +7,7 @@ export function Contact() {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
+    subject: "",
     message: "",
   });
 
@@ -16,13 +17,33 @@ export function Contact() {
     e.preventDefault();
     setLoading(true);
 
-    // Simulate form submission
+    const formElement = e.target;
+    const formData = new FormData(formElement);
+
+    // Add Web3Forms access key
+    formData.append("access_key", "0562216d-f078-4c0a-8d17-850966cf8e33");
+
+    // Add recipient email as a hidden field
+    formData.append("to_email", "anupbubay9986@gmail.com");
+
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      toast.success("Message sent successfully! I'll get back to you soon.");
-      setFormData({ name: "", email: "", message: "" });
+      const response = await fetch("https://api.web3forms.com/submit", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        toast.success("Message sent successfully! I'll get back to you soon.");
+        formElement.reset();
+        setFormData({ name: "", email: "", subject: "", message: "" });
+      } else {
+        toast.error("Something went wrong: " + data.message);
+      }
     } catch (error) {
       toast.error("Something went wrong. Please try again.");
+      console.error(error);
     } finally {
       setLoading(false);
     }
@@ -39,20 +60,26 @@ export function Contact() {
     {
       icon: <Mail className="w-6 h-6" />,
       label: "Email",
-      value: "anup@example.com",
-      link: "mailto:anup@example.com",
+      value: "anupbubay9986@gmail.com",
+      link: "mailto:anupbubay9986@gmail.com",
+      target: "_blank",
+      rel: "noopener noreferrer",
     },
     {
       icon: <Phone className="w-6 h-6" />,
-      label: "Phone",
-      value: "+1 (555) 123-4567",
-      link: "tel:+15551234567",
+      label: "WhatsApp",
+      value: "+91 9531763641",
+      link: "https://wa.me/919531763641",
+      target: "_blank",
+      rel: "noopener noreferrer",
     },
     {
       icon: <MapPin className="w-6 h-6" />,
       label: "Location",
-      value: "San Francisco, CA",
-      link: "#",
+      value: "Kolkata ,West Bengal, India",
+      link: "https://maps.app.goo.gl/VvZkFbky7b6CqX6J9",
+      target: "_blank",
+      rel: "noopener noreferrer",
     },
   ];
 
@@ -99,6 +126,8 @@ export function Contact() {
                 <motion.a
                   key={info.label}
                   href={info.link}
+                  target={info.target}
+                  rel={info.rel}
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
@@ -125,6 +154,28 @@ export function Contact() {
             className="glass-effect p-8 rounded-2xl"
           >
             <form onSubmit={handleSubmit} className="space-y-6">
+              <input
+                type="hidden"
+                name="access_key"
+                value="0562216d-f078-4c0a-8d17-850966cf8e33"
+              />
+              <input
+                type="hidden"
+                name="to_email"
+                value="anupbubay9986@gmail.com"
+              />
+              <input
+                type="checkbox"
+                name="botcheck"
+                className="hidden"
+                style={{ display: "none" }}
+              />
+              <input
+                type="hidden"
+                name="from_name"
+                value="Anup Portfolio Contact Form"
+              />
+              <input type="hidden" name="success_url" value="" />
               <div>
                 <label
                   htmlFor="name"
@@ -160,6 +211,25 @@ export function Contact() {
                   required
                   className="w-full px-4 py-3 bg-background/50 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary transition-all"
                   placeholder="your@email.com"
+                />
+              </div>
+
+              <div>
+                <label
+                  htmlFor="subject"
+                  className="block text-sm font-medium text-foreground mb-2"
+                >
+                  Subject
+                </label>
+                <input
+                  type="text"
+                  id="subject"
+                  name="subject"
+                  value={formData.subject}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-4 py-3 bg-background/50 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary transition-all"
+                  placeholder="What is this regarding?"
                 />
               </div>
 
