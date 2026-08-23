@@ -1,0 +1,234 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Portfolio Design System - Dark theme with purple/pink gradients */
+
+@layer base {
+  :root {
+    /* Dark Portfolio Theme */
+    --background: 260 35% 8%;
+    --foreground: 300 20% 95%;
+
+    --card: 260 25% 12%;
+    --card-foreground: 300 15% 90%;
+
+    --popover: 260 25% 12%;
+    --popover-foreground: 300 15% 90%;
+
+    --primary: 280 100% 70%;
+    --primary-foreground: 260 35% 8%;
+
+    --secondary: 300 20% 15%;
+    --secondary-foreground: 300 15% 90%;
+
+    --muted: 260 20% 15%;
+    --muted-foreground: 300 10% 60%;
+
+    --accent: 320 90% 65%;
+    --accent-foreground: 260 35% 8%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 260 20% 18%;
+    --input: 260 20% 18%;
+    --ring: 280 100% 70%;
+
+    /* Portfolio Specific Colors */
+    --hero-primary: 280 100% 70%;
+    --hero-secondary: 320 90% 65%;
+    --glass-bg: 260 25% 12%;
+    --glass-border: 280 50% 30%;
+    
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(280 100% 70%), hsl(320 90% 65%));
+    --gradient-background: linear-gradient(135deg, hsl(260 35% 8%), hsl(280 25% 12%), hsl(320 30% 10%));
+    --gradient-glass: linear-gradient(135deg, hsla(280 30% 15% / 0.3), hsla(320 30% 20% / 0.2));
+    
+    /* Shadows */
+    --shadow-glow: 0 0 40px hsl(280 100% 70% / 0.3);
+    --shadow-card: 0 8px 32px hsla(280 50% 10% / 0.4);
+    --shadow-hero: 0 0 60px hsl(320 90% 65% / 0.4);
+
+    --radius: 1rem;
+
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    /* Same as root for this portfolio theme */
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    overflow-x: hidden;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    background: var(--gradient-background);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    overflow-x: hidden;
+    width: 100%;
+  }
+}
+
+@layer components {
+  .glass-effect {
+    background: var(--gradient-glass);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid hsl(var(--glass-border) / 0.2);
+    box-shadow: var(--shadow-card);
+  }
+
+  .hero-glow {
+    box-shadow: var(--shadow-hero);
+  }
+
+  .text-gradient {
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .btn-hero {
+    background: var(--gradient-primary);
+    border: none;
+    color: hsl(var(--primary-foreground));
+    padding: 1rem 2rem;
+    border-radius: var(--radius);
+    font-weight: 600;
+    letter-spacing: 0.025em;
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease, filter 0.25s ease;
+    box-shadow: var(--shadow-glow);
+    cursor: pointer;
+  }
+
+  .btn-hero:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 0 50px hsl(280 100% 70% / 0.5);
+    filter: brightness(1.05);
+  }
+
+  .btn-hero:active {
+    transform: translateY(0) scale(0.98);
+  }
+
+  .skill-icon {
+    width: 3.25rem;
+    height: 3.25rem;
+    padding: 0.5rem;
+    background: var(--gradient-glass);
+    border: 1px solid hsl(var(--border) / 0.4);
+    border-radius: var(--radius);
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .skill-icon:hover {
+    transform: translateY(-4px);
+    border-color: hsl(var(--primary) / 0.5);
+    box-shadow: 0 4px 20px hsl(280 100% 70% / 0.25);
+  }
+
+  .project-card {
+    background: var(--gradient-glass);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid hsl(var(--border) / 0.3);
+    border-radius: var(--radius);
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.35s ease, box-shadow 0.35s ease;
+    overflow: hidden;
+    will-change: transform;
+  }
+
+  .project-card:hover {
+    transform: translateY(-6px);
+    border-color: hsl(var(--primary) / 0.4);
+    box-shadow: 0 16px 40px -10px hsla(280, 100%, 70%, 0.15), var(--shadow-card);
+  }
+
+  .grid-pattern {
+    background-image: radial-gradient(rgba(168, 85, 247, 0.12) 1px, transparent 1px);
+    background-size: 32px 32px;
+  }
+
+  .grid-pattern-fine {
+    background-image: 
+      linear-gradient(to right, rgba(168, 85, 247, 0.05) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(168, 85, 247, 0.05) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+}
+
+/* Keyframes & Animations */
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes marquee {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-spin-slow {
+  animation: spin-slow 20s linear infinite;
+}
+
+.animate-spin-slow:hover {
+  animation-play-state: paused;
+}
+
+.animate-marquee {
+  display: flex;
+  width: max-content;
+  animation: marquee 30s linear infinite;
+  will-change: transform;
+}
+
+.marquee-container:hover .animate-marquee {
+  animation-play-state: paused;
+}
+
+/* Accessibility: Respect Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .animate-spin-slow,
+  .animate-marquee,
+  .animate-float,
+  .animate-bounce {
+    animation: none !important;
+  }
+}
