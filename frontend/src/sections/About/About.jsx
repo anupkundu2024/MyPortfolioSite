@@ -51,7 +51,7 @@ export function About() {
     {
       category: "Backend & APIs",
       icon: <Server className="w-4 h-4 text-accent" />,
-      skills: ["Node.js", "Express.js", "RESTful APIs", "JWT Auth", "MVC Architecture"],
+      skills: ["Node.js", "Express.js", "Python", "RESTful APIs", "JWT Auth", "MVC Architecture"],
     },
     {
       category: "Databases & Cloud",
@@ -183,7 +183,7 @@ export function About() {
                 <div>
                   <span className="text-3xl sm:text-4xl font-extrabold text-foreground">15+</span>
                   <h4 className="text-base font-bold text-foreground mt-1">Technologies & Tools</h4>
-                  <p className="text-xs text-muted-foreground mt-1">React, Node.js, Express, MongoDB, MySQL, Tailwind CSS & Git.</p>
+                  <p className="text-xs text-muted-foreground mt-1">React, Node.js, Express, MongoDB, Python, MySQL, Tailwind CSS & Git.</p>
                 </div>
                 <div className="p-3 rounded-xl bg-accent/10 text-accent group-hover:scale-110 transition-transform">
                   <Code2 className="w-6 h-6" />

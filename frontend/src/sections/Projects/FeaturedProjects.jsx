@@ -70,7 +70,7 @@ export function FeaturedProjects() {
                   >
                     <img
                       src={project.image}
-                      alt={`${project.title} - Full Stack Project Preview`}
+                      alt={`Screenshot of ${project.title} - ${project.subtitle}`}
                       loading="lazy"
                       className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700 ease-out"
                     />

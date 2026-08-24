@@ -129,7 +129,7 @@ export function ProjectExplorer() {
                   <div className="aspect-[16/10] overflow-hidden relative border-b border-border/40">
                     <img
                       src={project.image}
-                      alt={`${project.title} - Project preview`}
+                      alt={`Screenshot of ${project.title} - ${project.categoryName}`}
                       loading="lazy"
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />

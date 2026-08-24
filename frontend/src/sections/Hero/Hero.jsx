@@ -184,7 +184,7 @@ export function Hero() {
               <div className="relative rounded-2xl overflow-hidden border border-border/50 glass-effect shadow-2xl">
                 <img
                   src="https://i.postimg.cc/fyCnLbKz/IMG-20250829-WA0104-2.jpg"
-                  alt="Anup Kundu - Full Stack Software Developer Profile Photo"
+                  alt="Anup Kundu — Full-Stack Developer & Final-Year CSE Student"
                   loading="eager"
                   className="w-full h-auto object-cover transform transition-transform duration-700 ease-out group-hover:scale-[1.03]"
                 />
