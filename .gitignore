@@ -29,6 +29,14 @@ backend/.env
 backend/.env.*
 !backend/.env.example
 
+# Protected CV assets
+# backend/private/ is served ONLY through the authenticated GET /api/cv endpoint.
+# Committing the real CV here would publish it via raw.githubusercontent.com on a
+# public repository, bypassing that authentication entirely. The directory itself
+# is tracked (via its README) so the path exists after a fresh clone.
+backend/private/*
+!backend/private/README.md
+
 # Local / Temporary files
 *.local
 .cache/

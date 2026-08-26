@@ -1,5 +1,7 @@
 import { Router } from "express";
-import contactRoutes from "./contactRoutes.js";
+import authRoutes from "./authRoutes.js";
+import cvRoutes from "./cvRoutes.js";
+import { isDatabaseReady } from "../config/database.js";
 import { sendSuccess } from "../utils/responseHandler.js";
 
 const router = Router();
@@ -11,6 +13,7 @@ router.get("/health", (req, res) => {
     {
       status: "healthy",
       service: "portfolio-backend",
+      database: isDatabaseReady() ? "connected" : "disconnected",
       uptime: process.uptime(),
       timestamp: new Date().toISOString(),
     },
@@ -18,7 +21,10 @@ router.get("/health", (req, res) => {
   );
 });
 
-// Contact endpoint
-router.use("/contact", contactRoutes);
+// Authentication for the CV gate
+router.use("/auth", authRoutes);
+
+// Protected CV resource
+router.use("/cv", cvRoutes);
 
 export default router;

@@ -3,6 +3,7 @@ import { ArrowDown, ExternalLink, Github, Linkedin, Briefcase, Mail, Sparkles, T
 import { Typewriter } from "react-simple-typewriter";
 import { ParticleBackground } from "./ParticleBackground";
 import { RotatingBadge } from "./RotatingBadge";
+import { CvAccessButton } from "@/components/cv";
 
 export function Hero() {
   const scrollToProjects = () => {
@@ -142,6 +143,9 @@ export function Hero() {
                 <Mail className="w-4 h-4" />
                 <span>Get In Touch</span>
               </button>
+
+              {/* Secondary CTA: Authenticated CV access */}
+              <CvAccessButton variant="hero" />
 
               {/* Quick Profile Links */}
               <div className="flex items-center gap-2 pl-1">

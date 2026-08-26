@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Menu, X, Github, Linkedin, Sparkles } from "lucide-react";
+import { CvAccessButton } from "@/components/cv";
 
 const NAV_LINKS = [
   { name: "Home", id: "home" },
@@ -129,6 +130,8 @@ export function Navbar() {
             <Linkedin className="w-4 h-4" />
           </a>
 
+          <CvAccessButton variant="nav" label="CV" />
+
           <button
             onClick={() => scrollToSection("contact")}
             className="flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-semibold bg-primary/15 hover:bg-primary/25 text-primary border border-primary/30 hover:border-primary transition-all duration-200 hover:shadow-[0_0_15px_rgba(168,85,247,0.4)] cursor-pointer"
@@ -174,6 +177,12 @@ export function Navbar() {
                 <span className="text-xs text-muted-foreground font-mono">→</span>
               </button>
             ))}
+
+            <CvAccessButton
+              variant="mobile"
+              label="Download CV"
+              onActivate={() => setMobileMenuOpen(false)}
+            />
 
             <div className="pt-4 mt-2 border-t border-border/50 flex flex-col gap-3">
               <div className="flex items-center justify-center gap-4 py-2">

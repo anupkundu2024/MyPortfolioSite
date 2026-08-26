@@ -1,7 +1,12 @@
 import { motion } from "framer-motion";
-import { Github, Linkedin, Twitter, Mail, ArrowUp } from "lucide-react";
+import { useState } from "react";
+import { Github, Linkedin, Twitter, Mail, ArrowUp, ShieldCheck } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
+import { PrivacyNotice } from "@/components/cv";
 
 export function Footer() {
+  const [privacyOpen, setPrivacyOpen] = useState(false);
+
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -54,6 +59,13 @@ export function Footer() {
             <p className="text-xs text-muted-foreground">
               Built with React, Vite, Tailwind CSS, Framer Motion & Three.js.
             </p>
+            <button
+              onClick={() => setPrivacyOpen(true)}
+              className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded pt-0.5"
+            >
+              <ShieldCheck className="w-3.5 h-3.5" aria-hidden="true" />
+              <span>CV Access Privacy Notice</span>
+            </button>
           </div>
 
           {/* Developer Profile Links & Back to Top */}
@@ -93,6 +105,23 @@ export function Footer() {
           </div>
         </motion.div>
       </div>
+
+      {/* Privacy notice for the authenticated CV feature. Rendered as a dialog so
+          no new route is introduced and the existing SEO setup is untouched. */}
+      <Dialog open={privacyOpen} onOpenChange={setPrivacyOpen}>
+        <DialogContent className="max-w-lg w-[calc(100%-2rem)] sm:w-full max-h-[85vh] overflow-y-auto rounded-2xl border border-[hsl(var(--glass-border)/0.35)] bg-[hsl(var(--card)/0.95)] backdrop-blur-2xl p-6 sm:p-7">
+          <DialogTitle className="text-xl font-extrabold tracking-tight text-foreground">
+            CV Access <span className="text-gradient">Privacy Notice</span>
+          </DialogTitle>
+          <DialogDescription className="text-sm text-muted-foreground">
+            This applies only to the CV download feature. Browsing the rest of this site requires no
+            account and collects nothing.
+          </DialogDescription>
+          <div className="pt-2">
+            <PrivacyNotice />
+          </div>
+        </DialogContent>
+      </Dialog>
     </footer>
   );
 }
