@@ -1,6 +1,7 @@
 import { Router } from "express";
 import authRoutes from "./authRoutes.js";
 import cvRoutes from "./cvRoutes.js";
+import chatRoutes from "./chatRoutes.js";
 import { isDatabaseReady } from "../config/database.js";
 import { sendSuccess } from "../utils/responseHandler.js";
 
@@ -26,5 +27,8 @@ router.use("/auth", authRoutes);
 
 // Protected CV resource
 router.use("/cv", cvRoutes);
+
+// Portfolio chatbot ("Anup AI")
+router.use("/chat", chatRoutes);
 
 export default router;

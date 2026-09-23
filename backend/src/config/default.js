@@ -69,6 +69,17 @@ export const config = {
   },
 
   bcryptRounds: toInt(process.env.BCRYPT_ROUNDS, 12),
+
+  // "Anup AI" portfolio chatbot. The key is read here and nowhere else; it is
+  // never sent to the browser or included in any response.
+  gemini: {
+    apiKey: process.env.GEMINI_API_KEY || "",
+    model: process.env.GEMINI_MODEL || "gemini-3.8-flash",
+    // Tried once when the primary model is overloaded or unavailable.
+    fallbackModel: process.env.GEMINI_FALLBACK_MODEL || "gemini-3.6-flash",
+    timeoutMs: toInt(process.env.GEMINI_TIMEOUT_MS, 20000),
+    maxOutputTokens: toInt(process.env.GEMINI_MAX_OUTPUT_TOKENS, 1024),
+  },
 };
 
 /**
@@ -102,6 +113,12 @@ export const validateConfig = () => {
 
   if (!config.allowedOrigins.length) {
     problems.push("No allowed CORS origins resolved — set ALLOWED_ORIGINS.");
+  }
+
+  // The chatbot is optional: a missing key disables /api/chat (503) but must
+  // never stop the rest of the API from booting, so it is only a warning.
+  if (!config.gemini.apiKey) {
+    console.warn("⚠️  Config: GEMINI_API_KEY is not set — the portfolio chatbot is disabled.");
   }
 
   if (problems.length && config.isProduction) {
