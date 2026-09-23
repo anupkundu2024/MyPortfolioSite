@@ -1,30 +1,25 @@
-import { motion } from "framer-motion";
-import { ArrowDown, ExternalLink, Github, Linkedin, Briefcase, Mail, Sparkles, Terminal } from "lucide-react";
+import { lazy, Suspense, useEffect, useState } from "react";
+import { ArrowDown, Github, Linkedin, Briefcase, Mail, Sparkles, Terminal } from "lucide-react";
 import { Typewriter } from "react-simple-typewriter";
-import { ParticleBackground } from "./ParticleBackground";
 import { RotatingBadge } from "./RotatingBadge";
 import { CvAccessButton } from "@/components/cv";
+import { whenIdle } from "@/lib/idle";
+import { scrollToSection } from "@/lib/scrollToSection";
+
+// Three.js is the heaviest dependency on the page. It is fetched only after the
+// hero has painted, so the headline, photo and CTAs never wait for it.
+const ParticleBackground = lazy(() => import("./ParticleBackground"));
+
+const HERO_IMAGE_URL = "https://i.postimg.cc/fyCnLbKz/IMG-20250829-WA0104-2.jpg";
 
 export function Hero() {
-  const scrollToProjects = () => {
-    const element = document.getElementById("work");
-    if (element) {
-      const navOffset = 70;
-      const elementPosition = element.getBoundingClientRect().top;
-      const offsetPosition = elementPosition + window.pageYOffset - navOffset;
-      window.scrollTo({ top: offsetPosition, behavior: "smooth" });
-    }
-  };
+  const [showParticles, setShowParticles] = useState(false);
 
-  const scrollToContact = () => {
-    const element = document.getElementById("contact");
-    if (element) {
-      const navOffset = 70;
-      const elementPosition = element.getBoundingClientRect().top;
-      const offsetPosition = elementPosition + window.pageYOffset - navOffset;
-      window.scrollTo({ top: offsetPosition, behavior: "smooth" });
-    }
-  };
+  useEffect(() => whenIdle(() => setShowParticles(true)), []);
+
+  const scrollToProjects = () => scrollToSection("work");
+
+  const scrollToContact = () => scrollToSection("contact");
 
   return (
     <section
@@ -33,7 +28,11 @@ export function Hero() {
       aria-label="Introduction and Developer Summary"
     >
       {/* 3D Particle Canvas Background */}
-      <ParticleBackground />
+      {showParticles && (
+        <Suspense fallback={null}>
+          <ParticleBackground />
+        </Suspense>
+      )}
 
       {/* Grid Pattern Overlay */}
       <div className="absolute inset-0 grid-pattern-fine pointer-events-none opacity-40 -z-10" />
@@ -44,26 +43,18 @@ export function Hero() {
       <div className="container mx-auto px-4 sm:px-6 relative z-10">
         <div className="grid lg:grid-cols-12 gap-10 lg:gap-8 items-center">
           {/* Left Column - Core Identity & Value Proposition */}
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-            className="lg:col-span-7 space-y-6 text-center lg:text-left"
-          >
+          <div className="hero-enter-copy lg:col-span-7 space-y-6 text-center lg:text-left">
             {/* Availability Indicator */}
             <div className="flex flex-wrap items-center justify-center lg:justify-start gap-2.5">
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.1, duration: 0.6 }}
-                className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs sm:text-sm font-medium tracking-wide shadow-[0_0_20px_rgba(16,185,129,0.15)]"
+              <div
+                className="hero-enter-pill inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs sm:text-sm font-medium tracking-wide shadow-[0_0_20px_rgba(16,185,129,0.15)]"
               >
                 <span className="relative flex h-2.5 w-2.5">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
                   <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500" />
                 </span>
                 <span>OPEN TO SWE INTERNSHIPS & JUNIOR ROLES</span>
-              </motion.div>
+              </div>
 
               <span className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-semibold">
                 <span>Final-Year B.Tech CSE</span>
@@ -115,11 +106,8 @@ export function Hero() {
             </div>
 
             {/* Action CTAs & Direct Profiles */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3, duration: 0.6 }}
-              className="flex flex-wrap items-center justify-center lg:justify-start gap-4 pt-3"
+            <div
+              className="hero-enter-actions flex flex-wrap items-center justify-center lg:justify-start gap-4 pt-3"
             >
               {/* Primary CTA: View Projects */}
               <button
@@ -168,15 +156,12 @@ export function Hero() {
                   <Linkedin className="w-5 h-5" />
                 </a>
               </div>
-            </motion.div>
-          </motion.div>
+            </div>
+          </div>
 
           {/* Right Column - Profile Photo with Rotating Badge */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.94, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            transition={{ delay: 0.2, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-            className="lg:col-span-5 flex justify-center items-center relative"
+          <div
+            className="hero-enter-photo lg:col-span-5 flex justify-center items-center relative"
           >
             <div className="relative max-w-sm sm:max-w-md w-full group">
               {/* Ambient backglow */}
@@ -186,10 +171,12 @@ export function Hero() {
               />
 
               <div className="relative rounded-2xl overflow-hidden border border-border/50 glass-effect shadow-2xl">
+                {/* LCP element: preloaded from index.html, never lazy-loaded. */}
                 <img
-                  src="https://i.postimg.cc/fyCnLbKz/IMG-20250829-WA0104-2.jpg"
+                  src={HERO_IMAGE_URL}
                   alt="Anup Kundu — Full-Stack Developer & Final-Year CSE Student"
                   loading="eager"
+                  fetchpriority="high"
                   className="w-full h-auto object-cover transform transition-transform duration-700 ease-out group-hover:scale-[1.03]"
                 />
               </div>
@@ -205,7 +192,7 @@ export function Hero() {
                 <span>MERN Developer</span>
               </div>
             </div>
-          </motion.div>
+          </div>
         </div>
       </div>
 

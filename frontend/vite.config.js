@@ -24,11 +24,11 @@ export default defineConfig(({ mode }) => ({
   build: {
     rollupOptions: {
       output: {
+        // Only the React runtime is pinned to its own long-lived chunk. Three.js,
+        // framer-motion and icons are left to Rollup so they land in the lazy
+        // chunks that actually use them instead of being preloaded up front.
         manualChunks: {
           vendor: ["react", "react-dom", "react-router-dom"],
-          three: ["three", "@react-three/fiber", "@react-three/drei"],
-          framer: ["framer-motion"],
-          icons: ["lucide-react"],
         },
       },
     },

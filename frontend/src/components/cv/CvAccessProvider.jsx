@@ -1,7 +1,13 @@
-import { createContext, useCallback, useContext, useMemo, useRef, useState } from "react";
+import { createContext, lazy, Suspense, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { ApiError, buildApiUrl } from "@/lib/apiClient";
 import { useAuth } from "@/context/AuthContext";
-import { CV_PHASES, CvAuthModal } from "./CvAuthModal";
+import { whenIdle } from "@/lib/idle";
+import { CV_PHASES } from "./cvPhases";
+
+// The modal (Radix Dialog + form + framer-motion) is not needed for the first
+// paint. It is prefetched once the page is idle and mounted on first open.
+const loadCvAuthModal = () => import("./CvAuthModal");
+const CvAuthModal = lazy(() => loadCvAuthModal().then((module) => ({ default: module.CvAuthModal })));
 
 /**
  * Owns the single CV access flow shared by every entry point (hero CTA, navbar,
@@ -43,6 +49,12 @@ export function CvAccessProvider({ children }) {
 
   // Holds the blank tab opened during the click, before the ticket exists.
   const pendingTabRef = useRef(null);
+
+  // Stays true after the first open so the dialog can play its close animation.
+  const [modalMounted, setModalMounted] = useState(false);
+  if (isOpen && !modalMounted) setModalMounted(true);
+
+  useEffect(() => whenIdle(loadCvAuthModal, { timeout: 4000 }), []);
 
   const closePendingTab = () => {
     const tab = pendingTabRef.current;
@@ -142,19 +154,23 @@ export function CvAccessProvider({ children }) {
   return (
     <CvAccessContext.Provider value={value}>
       {children}
-      <CvAuthModal
-        isOpen={isOpen}
-        mode={mode}
-        phase={phase}
-        errorMessage={errorMessage}
-        cvUrls={cvUrls}
-        popupBlocked={popupBlocked}
-        onClose={closeCvAccess}
-        onSwitchMode={switchMode}
-        onAuthenticated={() => grantAccess({ autoOpen: true })}
-        onRetry={() => grantAccess({ autoOpen: false })}
-        onError={setErrorMessage}
-      />
+      {modalMounted && (
+        <Suspense fallback={null}>
+          <CvAuthModal
+            isOpen={isOpen}
+            mode={mode}
+            phase={phase}
+            errorMessage={errorMessage}
+            cvUrls={cvUrls}
+            popupBlocked={popupBlocked}
+            onClose={closeCvAccess}
+            onSwitchMode={switchMode}
+            onAuthenticated={() => grantAccess({ autoOpen: true })}
+            onRetry={() => grantAccess({ autoOpen: false })}
+            onError={setErrorMessage}
+          />
+        </Suspense>
+      )}
     </CvAccessContext.Provider>
   );
 }

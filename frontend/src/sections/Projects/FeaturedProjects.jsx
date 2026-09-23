@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { ExternalLink, Github, Sparkles, ArrowUpRight, ShieldCheck, TrendingUp, Bot, Compass } from "lucide-react";
 import { PROJECTS_DATA } from "@/data/projects";
+import { responsiveUnsplash } from "@/lib/unsplash";
 
 const PROJECT_ICONS = {
   kundustocks: <TrendingUp className="w-5 h-5 text-emerald-400" />,
@@ -69,9 +70,11 @@ export function FeaturedProjects() {
                     }`}
                   >
                     <img
-                      src={project.image}
+                      {...responsiveUnsplash(project.image, [480, 720, 900], { maxWidth: 1200 })}
+                      sizes="(min-width: 1024px) 600px, calc(100vw - 5rem)"
                       alt={`Screenshot of ${project.title} - ${project.subtitle}`}
                       loading="lazy"
+                      decoding="async"
                       className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700 ease-out"
                     />
 

@@ -16,16 +16,9 @@ import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/compone
 import { useAuth } from "@/context/AuthContext";
 import { PrivacyNotice } from "./PrivacyNotice";
 
-/**
- * Phases of the CV access flow. Declared here rather than in the provider so the
- * import graph stays one-directional (provider -> modal) with no cycle.
- */
-export const CV_PHASES = {
-  FORM: "form",
-  GRANTING: "granting",
-  SUCCESS: "success",
-  ERROR: "error",
-};
+import { CV_PHASES } from "./cvPhases";
+
+export { CV_PHASES };
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const MIN_PASSWORD_LENGTH = 8;

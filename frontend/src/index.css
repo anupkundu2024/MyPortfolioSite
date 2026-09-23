@@ -199,6 +199,52 @@
   animation: spin-slow 20s linear infinite;
 }
 
+/*
+ * Hero entrance animations. These mirror the framer-motion values the hero used
+ * (same distances, durations, delays and easings) but run in CSS so the hero no
+ * longer has to wait for the animation library to download before it appears.
+ */
+@keyframes hero-rise {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes hero-rise-sm {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes hero-pop {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes hero-photo {
+  from { opacity: 0; transform: translateY(20px) scale(0.94); }
+  to { opacity: 1; transform: none; }
+}
+
+.hero-enter-copy {
+  animation: hero-rise 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.hero-enter-pill {
+  animation: hero-pop 0.6s cubic-bezier(0.42, 0, 0.58, 1) 0.1s both;
+}
+
+.hero-enter-actions {
+  animation: hero-rise-sm 0.6s cubic-bezier(0.42, 0, 0.58, 1) 0.3s both;
+}
+
+.hero-enter-photo {
+  animation: hero-photo 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.2s both;
+}
+
+/* Rotating "EXPLORE MORE" badge (was an infinite framer-motion rotate). */
+.animate-badge-spin {
+  animation: spin-slow 18s linear infinite;
+}
+
 .animate-spin-slow:hover {
   animation-play-state: paused;
 }
@@ -225,7 +271,15 @@
     scroll-behavior: auto !important;
   }
 
+  .hero-enter-copy,
+  .hero-enter-pill,
+  .hero-enter-actions,
+  .hero-enter-photo {
+    animation-delay: 0s !important;
+  }
+
   .animate-spin-slow,
+  .animate-badge-spin,
   .animate-marquee,
   .animate-float,
   .animate-bounce {

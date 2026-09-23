@@ -2,10 +2,13 @@ export default {
 	darkMode: ["class"],
 	content: [
 		"./index.html",
-		"./pages/**/*.{js,jsx}",
-		"./components/**/*.{js,jsx}",
-		"./sections/**/*.{js,jsx}",
 		"./src/**/*.{js,jsx}",
+		// The shadcn/ui folder is scaffolding: only the primitives listed below are
+		// rendered. Scanning the rest emitted ~40 KB of CSS for components the site
+		// never uses. Add a file here when you start using another ui primitive.
+		"!./src/components/ui/**",
+		"./src/components/ui/dialog.jsx",
+		"./src/components/ui/sonner.jsx",
 	],
 	prefix: "",
 	theme: {

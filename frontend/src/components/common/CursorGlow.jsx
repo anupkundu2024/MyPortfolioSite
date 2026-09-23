@@ -88,8 +88,19 @@ export function CursorGlow() {
       motionQuery.addEventListener("change", handleMotionChange);
     }
 
+    // --- Animation loop control ---
+    // The loop sleeps once the dot, ring and glow have caught up with the mouse
+    // and wakes on the next mouse event, so an idle cursor costs no frames.
+    let animationFrameId = 0;
+    let settledFrames = 0;
+    const wake = () => {
+      settledFrames = 0;
+      if (!animationFrameId) animationFrameId = requestAnimationFrame(render);
+    };
+
     // --- Mouse Event Handlers ---
     const handleMouseMove = (e) => {
+      wake();
       mousePos.current.x = e.clientX;
       mousePos.current.y = e.clientY;
       stateRef.current.isVisible = true;
@@ -157,22 +168,27 @@ export function CursorGlow() {
 
     const handleMouseDown = () => {
       stateRef.current.isDown = true;
+      wake();
     };
 
     const handleMouseUp = () => {
       stateRef.current.isDown = false;
+      wake();
     };
 
     const handleMouseLeave = () => {
       stateRef.current.isVisible = false;
+      wake();
     };
 
     const handleMouseEnter = () => {
       stateRef.current.isVisible = true;
+      wake();
     };
 
     const handleWindowBlur = () => {
       stateRef.current.isVisible = false;
+      wake();
     };
 
     window.addEventListener("mousemove", handleMouseMove, { passive: true });
@@ -183,9 +199,7 @@ export function CursorGlow() {
     window.addEventListener("blur", handleWindowBlur);
 
     // --- Animation Loop ---
-    let animationFrameId;
-
-    const render = () => {
+    function render() {
       const { hoverType, isDown, isVisible, isMagnetic, magneticCenter } = stateRef.current;
 
       // Lerp speeds: instant if reduced motion is requested
@@ -302,10 +316,21 @@ export function CursorGlow() {
         glowRef.current.style.opacity = isVisible ? glowOpacity : 0;
       }
 
-      animationFrameId = requestAnimationFrame(render);
-    };
+      // Keep running until every layer is within a fraction of a pixel of its
+      // target for a few consecutive frames, then sleep until the next event.
+      const remaining = Math.max(
+        Math.abs(targetDotX - dotPos.current.x),
+        Math.abs(targetDotY - dotPos.current.y),
+        Math.abs(targetRingX - ringPos.current.x),
+        Math.abs(targetRingY - ringPos.current.y),
+        Math.abs(targetGlowX - glowPos.current.x),
+        Math.abs(targetGlowY - glowPos.current.y)
+      );
+      settledFrames = remaining < 0.1 ? settledFrames + 1 : 0;
+      animationFrameId = settledFrames > 3 ? 0 : requestAnimationFrame(render);
+    }
 
-    animationFrameId = requestAnimationFrame(render);
+    wake();
 
     return () => {
       window.removeEventListener("mousemove", handleMouseMove);
