@@ -1,6 +1,7 @@
 import { lazy, Suspense, useEffect, useState } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { CursorGlow } from "@/components/common/CursorGlow";
+import { ChatLauncher } from "@/components/chatbot/ChatLauncher";
 import { AuthProvider } from "@/context/AuthContext";
 import { CvAccessProvider } from "@/components/cv";
 import { whenIdle } from "@/lib/idle";
@@ -49,6 +50,8 @@ const App = () => (
         </BrowserRouter>
       </CvAccessProvider>
     </AuthProvider>
+    {/* "Ask Anup" button. The chat itself is a lazy chunk loaded on intent/click. */}
+    <ChatLauncher />
   </>
 );
 

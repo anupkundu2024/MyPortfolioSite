@@ -40,3 +40,23 @@ export const cvLimiter = rateLimit({
   skip: (req) => Boolean(req.headers.range),
   handler: jsonLimitResponse("Too many CV requests. Please try again later."),
 });
+
+/**
+ * Chatbot limits. Each message can cost a Gemini request, so bursts and
+ * sustained use are both capped per client address.
+ */
+const CHAT_LIMIT_MESSAGE = "You're sending messages too quickly. Please try again in a moment.";
+
+export const chatBurstLimiter = rateLimit({
+  ...baseOptions,
+  windowMs: 60 * 1000,
+  limit: 8,
+  handler: jsonLimitResponse(CHAT_LIMIT_MESSAGE),
+});
+
+export const chatDailyLimiter = rateLimit({
+  ...baseOptions,
+  windowMs: 24 * 60 * 60 * 1000,
+  limit: 100,
+  handler: jsonLimitResponse("You've reached today's chat limit. Please use the Contact section to reach Anup."),
+});
