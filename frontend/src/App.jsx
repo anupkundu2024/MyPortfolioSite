@@ -1,37 +1,55 @@
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { CursorGlow } from "@/components/common/CursorGlow";
 import { AuthProvider } from "@/context/AuthContext";
 import { CvAccessProvider } from "@/components/cv";
+import { whenIdle } from "@/lib/idle";
 import Index from "./pages/Index";
-import NotFound from "./pages/NotFound";
 
-const queryClient = new QueryClient();
+// Only the contact form raises toasts, long after first paint, so the toaster
+// (sonner + next-themes) is mounted once the page is idle.
+const Sonner = lazy(() =>
+  import("@/components/ui/sonner").then((module) => ({ default: module.Toaster }))
+);
+const NotFound = lazy(() => import("./pages/NotFound"));
+
+function DeferredToaster() {
+  const [ready, setReady] = useState(false);
+  useEffect(() => whenIdle(() => setReady(true), { timeout: 3000 }), []);
+
+  if (!ready) return null;
+  return (
+    <Suspense fallback={null}>
+      <Sonner />
+    </Suspense>
+  );
+}
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <CursorGlow />
-      {/* Session + CV access flow. Wraps the router so every entry point shares
-          one modal instance; it renders nothing until a CV button is clicked. */}
-      <AuthProvider>
-        <CvAccessProvider>
-          <BrowserRouter>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
-        </CvAccessProvider>
-      </AuthProvider>
-    </TooltipProvider>
-  </QueryClientProvider>
+  <>
+    <DeferredToaster />
+    <CursorGlow />
+    {/* Session + CV access flow. Wraps the router so every entry point shares
+        one modal instance; it renders nothing until a CV button is clicked. */}
+    <AuthProvider>
+      <CvAccessProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Index />} />
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route
+              path="*"
+              element={
+                <Suspense fallback={null}>
+                  <NotFound />
+                </Suspense>
+              }
+            />
+          </Routes>
+        </BrowserRouter>
+      </CvAccessProvider>
+    </AuthProvider>
+  </>
 );
 
 export default App;

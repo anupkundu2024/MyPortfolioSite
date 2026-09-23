@@ -18,6 +18,15 @@
     <link rel="canonical" href="https://anupportfolio2025.vercel.app/" />
     <meta name="google-site-verification" content="T9Lqr3kP_NRQIHlcuYT_XDn1oNgmzawP8cdrdTWzVS4" />
 
+    <!-- Performance: the hero photo is the LCP element. Start fetching it while the
+         JS bundle is still downloading instead of after React renders the hero. -->
+    <link
+      rel="preload"
+      as="image"
+      href="https://i.postimg.cc/fyCnLbKz/IMG-20250829-WA0104-2.jpg"
+      fetchpriority="high"
+    />
+
     <!-- Favicons -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="apple-touch-icon" href="/favicon.svg" />

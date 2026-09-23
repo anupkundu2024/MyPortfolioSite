@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Menu, X, Github, Linkedin, Sparkles } from "lucide-react";
 import { CvAccessButton } from "@/components/cv";
+import { scrollToSection as scrollToSectionById } from "@/lib/scrollToSection";
 
 const NAV_LINKS = [
   { name: "Home", id: "home" },
@@ -19,7 +20,10 @@ export function Navbar() {
   const [activeSection, setActiveSection] = useState("home");
 
   useEffect(() => {
-    const handleScroll = () => {
+    let frameId = 0;
+
+    const updateFromScroll = () => {
+      frameId = 0;
       const offset = window.scrollY;
       setScrolled(offset > 40);
 
@@ -35,28 +39,24 @@ export function Navbar() {
       }
     };
 
+    // Layout reads (offsetTop) run at most once per frame instead of on every
+    // scroll event, which keeps scrolling and input responsive.
+    const handleScroll = () => {
+      if (!frameId) frameId = requestAnimationFrame(updateFromScroll);
+    };
+
     window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      cancelAnimationFrame(frameId);
+    };
   }, []);
 
   const scrollToSection = (sectionId) => {
-    let element = document.getElementById(sectionId);
-    if (!element && sectionId === "featured-projects") {
-      element = document.getElementById("work");
-    }
-    if (!element && sectionId === "work") {
-      element = document.getElementById("featured-projects");
-    }
-    if (element) {
-      const navOffset = 70;
-      const elementPosition = element.getBoundingClientRect().top;
-      const offsetPosition = elementPosition + window.pageYOffset - navOffset;
-
-      window.scrollTo({
-        top: offsetPosition,
-        behavior: "smooth",
-      });
-    }
+    // "featured-projects" and "work" are aliases for the same section.
+    if (sectionId === "featured-projects") scrollToSectionById("featured-projects", "work");
+    else if (sectionId === "work") scrollToSectionById("work", "featured-projects");
+    else scrollToSectionById(sectionId);
   };
 
   return (

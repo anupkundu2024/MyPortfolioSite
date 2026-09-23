@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ExternalLink, Github, CloudSun, Box, FolderGit2, Sparkles } from "lucide-react";
+import { responsiveUnsplash } from "@/lib/unsplash";
 
 export function ProjectExplorer() {
   const [activeFilter, setActiveFilter] = useState("all");
@@ -128,9 +129,11 @@ export function ProjectExplorer() {
                   {/* Image Preview Container */}
                   <div className="aspect-[16/10] overflow-hidden relative border-b border-border/40">
                     <img
-                      src={project.image}
+                      {...responsiveUnsplash(project.image, [400, 600])}
+                      sizes="(min-width: 1024px) 400px, (min-width: 768px) 50vw, 100vw"
                       alt={`Screenshot of ${project.title} - ${project.categoryName}`}
                       loading="lazy"
+                      decoding="async"
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/20 to-transparent pointer-events-none" />
