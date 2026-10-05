@@ -14,12 +14,12 @@ const GENERIC_MESSAGE = "Something went wrong. Please try again.";
 const classify = (err) => {
   // Malformed JSON body
   if (err?.type === "entity.parse.failed") {
-    return { status: 400, message: "Malformed request body." };
+    return { status: 400, code: "INVALID_JSON", message: "Malformed request body." };
   }
 
   // Body larger than the configured limit
   if (err?.type === "entity.too.large") {
-    return { status: 413, message: "Request body is too large." };
+    return { status: 413, code: "REQUEST_TOO_LARGE", message: "Request body is too large." };
   }
 
   // Mongoose schema validation
@@ -28,54 +28,68 @@ const classify = (err) => {
       .map((issue) => issue.message)
       .filter(Boolean)
       .join(" ");
-    return { status: 400, message: detail || "Some of the submitted values are invalid." };
+    return { status: 400, code: "VALIDATION_ERROR", message: detail || "Some of the submitted values are invalid." };
   }
 
   // Malformed ObjectId
   if (err?.name === "CastError") {
-    return { status: 400, message: "Malformed request." };
+    return { status: 400, code: "REQUEST_ERROR", message: "Malformed request." };
   }
 
   // Unique index violation
   if (err?.code === 11000) {
-    return { status: 409, message: "That value is already registered." };
+    return { status: 409, code: "CONFLICT", message: "That value is already registered." };
   }
 
   // JWT verification problems that reached here unhandled
   if (err?.name === "TokenExpiredError") {
-    return { status: 401, message: "Your session has expired. Please sign in again." };
+    return { status: 401, code: "SESSION_EXPIRED", message: "Your session has expired. Please sign in again." };
   }
   if (err?.name === "JsonWebTokenError" || err?.name === "NotBeforeError") {
-    return { status: 401, message: "Invalid authentication token." };
+    return { status: 401, code: "INVALID_TOKEN", message: "Invalid authentication token." };
   }
 
   // Rejected by the CORS origin allowlist
   if (err?.code === "CORS_ORIGIN_DENIED") {
-    return { status: 403, message: "Origin not allowed." };
+    return { status: 403, code: "CORS_ORIGIN_DENIED", message: "Origin not allowed." };
   }
 
   // Database unreachable
   if (err?.name === "MongooseServerSelectionError" || err?.name === "MongoNetworkError") {
-    return { status: 503, message: "Service temporarily unavailable. Please try again shortly." };
+    return {
+      status: 503,
+      code: "DATABASE_UNAVAILABLE",
+      message: "Service temporarily unavailable. Please try again shortly.",
+    };
   }
 
   const status = Number.isInteger(err?.status) ? err.status : 500;
+  const exposed = err?.expose === true;
 
   return {
     status,
+    // Only codes our own code attached to an exposed error are passed through.
+    code:
+      exposed && typeof err?.code === "string"
+        ? err.code
+        : status >= 500
+        ? "INTERNAL_SERVER_ERROR"
+        : "REQUEST_ERROR",
     // Only messages our own code deliberately marked as client-safe are sent
     // through. Anything else — including 4xx thrown by a dependency — collapses
     // to a generic string so internal wording can never leak.
-    message: err?.expose === true && err?.message ? err.message : GENERIC_MESSAGE,
+    message: exposed && err?.message ? err.message : GENERIC_MESSAGE,
   };
 };
 
 export const errorHandler = (err, req, res, next) => {
-  const { status, message } = classify(err);
+  const { status, code, message } = classify(err);
 
   // Full detail stays server-side only, minus any credential in the query string.
-  const logLine = `${req.method} ${redactUrl(req.originalUrl)} -> ${status}: ${err?.message}`;
-  if (status >= 500) {
+  const logLine = `${req.method} ${redactUrl(req.originalUrl)} -> ${status} ${code}: ${err?.message}`;
+  // Errors our own code raised deliberately (exposed) were already explained
+  // where they were thrown; only genuinely unexpected failures get a stack.
+  if (status >= 500 && !err?.expose) {
     console.error(`Unhandled Error: ${logLine}`, config.isProduction ? "" : err?.stack || "");
   } else {
     console.warn(`Request Error: ${logLine}`);
@@ -87,6 +101,8 @@ export const errorHandler = (err, req, res, next) => {
 
   return res.status(status).json({
     success: false,
+    // `error` is the structured form; top-level `message` is kept for existing clients.
+    error: { code, message },
     message,
     timestamp: new Date().toISOString(),
   });
@@ -96,6 +112,7 @@ export const errorHandler = (err, req, res, next) => {
 export const notFoundHandler = (req, res) => {
   res.status(404).json({
     success: false,
+    error: { code: "NOT_FOUND", message: "Endpoint not found." },
     message: "Endpoint not found.",
     timestamp: new Date().toISOString(),
   });

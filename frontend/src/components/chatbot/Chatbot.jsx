@@ -6,6 +6,7 @@ import {
   MAX_HISTORY_ITEMS,
   MAX_MESSAGE_LENGTH,
   MAX_MESSAGES_IN_VIEW,
+  NETWORK_RETRY_DELAY_MS,
   REQUEST_TIMEOUT_MS,
 } from "./chatLimits";
 
@@ -15,27 +16,65 @@ import {
  * The conversation lives only in this component's memory. It is never written
  * to storage and disappears when the tab is closed or reloaded. The Gemini key
  * never reaches the browser — only the backend talks to Gemini.
+ *
+ * Contract: success -> { success: true, reply }, failure ->
+ * { success: false, error: { code, message } }. Each failure code maps to its
+ * own message below, so a rate limit, a timeout and an outage read differently.
  */
 
 const GREETING = {
   id: "greeting",
   role: "assistant",
-  content: "Hi! I'm Anup AI 👋\nAsk me about Anup's skills, projects, experience, or how to get in touch.",
+  content: "Hi! I'm Anup AI 👋\nAsk me about Anup's skills, projects, education, availability, or how to get in touch.",
 };
 
-const CONNECTION_ERROR = "I'm having trouble connecting right now. Please try again in a moment.";
+const UNAVAILABLE = "Anup AI is temporarily unavailable. Please try again shortly.";
+
+// Code -> [client message (null = use the backend's own wording), can retry]
+const ERRORS = {
+  NETWORK_ERROR: [UNAVAILABLE, true],
+  CLIENT_TIMEOUT: ["Anup AI is taking too long to respond. Please try again.", true],
+  BAD_RESPONSE: ["Anup AI sent an unexpected response. Please try again.", true],
+  CHAT_RATE_LIMITED: ["You're sending messages too quickly. Please wait a moment.", true],
+  RATE_LIMITED: ["You're sending messages too quickly. Please wait a moment.", true],
+  CHAT_DAILY_LIMIT: [null, false],
+  CHAT_INVALID_REQUEST: [null, false],
+  CHAT_MESSAGE_TOO_LONG: [`Please keep your message under ${MAX_MESSAGE_LENGTH} characters.`, false],
+  REQUEST_TOO_LARGE: [`Please keep your message under ${MAX_MESSAGE_LENGTH} characters.`, false],
+  INVALID_JSON: ["Something went wrong sending that message. Please try again.", true],
+  GEMINI_NOT_CONFIGURED: [UNAVAILABLE, true],
+  GEMINI_AUTH_ERROR: [UNAVAILABLE, true],
+  GEMINI_MODEL_ERROR: [UNAVAILABLE, true],
+  GEMINI_API_ERROR: [UNAVAILABLE, true],
+  GEMINI_RATE_LIMITED: ["Anup AI is very busy right now. Please try again in a moment.", true],
+  GEMINI_TIMEOUT: ["That took too long to answer. Please try again.", true],
+  GEMINI_RESPONSE_ERROR: ["I couldn't come up with an answer to that. Could you rephrase your question?", true],
+};
+
+class ChatClientError extends Error {
+  constructor(code) {
+    super(code);
+    this.code = code;
+  }
+}
+
+/** Maps any failure to { content, retryable } for the error bubble. */
+const describeError = (error) => {
+  let code = error?.code;
+  if (!code && error instanceof ApiError) {
+    code = error.status === 429 ? "RATE_LIMITED" : error.status >= 500 ? "GEMINI_API_ERROR" : null;
+  }
+  const entry = ERRORS[code];
+  if (entry) return { content: entry[0] || error.message || UNAVAILABLE, retryable: entry[1] };
+  // Unknown 4xx: the backend only ever returns short, user-facing messages.
+  if (error instanceof ApiError && error.status >= 400 && error.status < 500 && error.message) {
+    return { content: error.message, retryable: false };
+  }
+  return { content: UNAVAILABLE, retryable: true };
+};
 
 let nextId = 0;
 const makeId = () => `m${++nextId}`;
-
-const friendlyError = (error) => {
-  if (error?.name === "AbortError" || error?.name === "TimeoutError") {
-    return "That took too long to answer. Please try again in a moment.";
-  }
-  // The backend only ever returns short, user-facing messages.
-  if (error instanceof ApiError && error.status && error.message) return error.message;
-  return CONNECTION_ERROR;
-};
 
 /** Recent successful turns, trimmed to what the backend accepts. */
 const buildHistory = (messages) =>
@@ -45,6 +84,35 @@ const buildHistory = (messages) =>
     .filter((m, i) => m.id !== GREETING.id && !m.error && !(m.role === "user" && messages[i + 1]?.error))
     .slice(-MAX_HISTORY_ITEMS)
     .map((m) => ({ role: m.role, content: m.content.slice(0, MAX_HISTORY_ITEM_LENGTH) }));
+
+const wait = (ms, signal) =>
+  new Promise((resolve, reject) => {
+    if (signal.aborted) return reject(new DOMException("Aborted", "AbortError"));
+    const timer = setTimeout(resolve, ms);
+    signal.addEventListener(
+      "abort",
+      () => {
+        clearTimeout(timer);
+        reject(new DOMException("Aborted", "AbortError"));
+      },
+      { once: true }
+    );
+  });
+
+/** One request, plus a single automatic retry when the network itself failed. */
+async function requestReply(body, signal) {
+  let data;
+  try {
+    data = await apiRequest("/chat", { method: "POST", body, signal });
+  } catch (error) {
+    if (!(error instanceof ApiError && error.code === "NETWORK_ERROR")) throw error;
+    await wait(NETWORK_RETRY_DELAY_MS, signal);
+    data = await apiRequest("/chat", { method: "POST", body, signal });
+  }
+
+  if (data?.success === true && typeof data.reply === "string" && data.reply.trim()) return data.reply;
+  throw new ChatClientError("BAD_RESPONSE");
+}
 
 export default function Chatbot({ open, onClose }) {
   const [messages, setMessagesState] = useState([GREETING]);
@@ -65,7 +133,7 @@ export default function Chatbot({ open, onClose }) {
   const send = useCallback(
     async (rawText, { retry = false } = {}) => {
       const text = rawText.trim().slice(0, MAX_MESSAGE_LENGTH);
-      if (!text || pending) return;
+      if (!text || controllerRef.current) return;
 
       const previous = messagesRef.current;
       // A retry replaces the failed answer (always the latest message) instead
@@ -77,36 +145,50 @@ export default function Chatbot({ open, onClose }) {
       setPending(true);
       const controller = new AbortController();
       controllerRef.current = controller;
-      const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+      let timedOut = false;
+      const timer = setTimeout(() => {
+        timedOut = true;
+        controller.abort();
+      }, REQUEST_TIMEOUT_MS);
 
       try {
-        const data = await apiRequest("/chat", {
-          method: "POST",
-          body: { message: text, history },
-          signal: controller.signal,
-        });
-        const reply = typeof data?.reply === "string" && data.reply.trim() ? data.reply : null;
-        if (!reply) throw new Error("Empty reply");
-
+        const reply = await requestReply({ message: text, history }, controller.signal);
+        if (controllerRef.current !== controller) return; // conversation was reset
         setMessages([...messagesRef.current, { id: makeId(), role: "assistant", content: reply }]);
       } catch (error) {
+        if (controllerRef.current !== controller) return; // conversation was reset
+        const failure = describeError(timedOut ? { code: "CLIENT_TIMEOUT" } : error);
         setMessages([
           ...messagesRef.current,
-          { id: makeId(), role: "assistant", content: friendlyError(error), error: true, retryText: text },
+          {
+            id: makeId(),
+            role: "assistant",
+            content: failure.content,
+            error: true,
+            retryText: failure.retryable ? text : undefined,
+          },
         ]);
       } finally {
         clearTimeout(timer);
-        controllerRef.current = null;
-        setPending(false);
+        if (controllerRef.current === controller) {
+          controllerRef.current = null;
+          setPending(false);
+        }
       }
     },
-    [pending, setMessages]
+    [setMessages]
   );
 
-  const retry = useCallback(
-    (message) => send(message.retryText, { retry: true }),
-    [send]
-  );
+  const retry = useCallback((message) => send(message.retryText, { retry: true }), [send]);
+
+  // "New chat": drop the local conversation and any answer still in flight.
+  const reset = useCallback(() => {
+    const controller = controllerRef.current;
+    controllerRef.current = null;
+    controller?.abort();
+    setPending(false);
+    setMessages([GREETING]);
+  }, [setMessages]);
 
   const hasConversation = messages.some((m) => m.role === "user");
 
@@ -117,8 +199,10 @@ export default function Chatbot({ open, onClose }) {
       messages={messages}
       pending={pending}
       showSuggestions={!hasConversation}
+      canReset={hasConversation || pending}
       onSend={send}
       onRetry={retry}
+      onReset={reset}
     />
   );
 }

@@ -117,8 +117,13 @@ export const validateConfig = () => {
 
   // The chatbot is optional: a missing key disables /api/chat (503) but must
   // never stop the rest of the API from booting, so it is only a warning.
+  // Only presence and model names are logged — never the key itself.
   if (!config.gemini.apiKey) {
-    console.warn("⚠️  Config: GEMINI_API_KEY is not set — the portfolio chatbot is disabled.");
+    console.warn(
+      "⚠️  [CHAT] GEMINI_API_KEY is not set — instant answers still work, but AI answers return GEMINI_NOT_CONFIGURED."
+    );
+  } else {
+    console.log(`[CHAT] Gemini enabled: model=${config.gemini.model} fallback=${config.gemini.fallbackModel || "none"}`);
   }
 
   if (problems.length && config.isProduction) {

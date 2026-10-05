@@ -1,8 +1,9 @@
 import rateLimit from "express-rate-limit";
 
-const jsonLimitResponse = (message) => (req, res) =>
+const jsonLimitResponse = (message, code = "RATE_LIMITED") => (req, res) =>
   res.status(429).json({
     success: false,
+    error: { code, message },
     message,
     timestamp: new Date().toISOString(),
   });
@@ -42,21 +43,36 @@ export const cvLimiter = rateLimit({
 });
 
 /**
- * Chatbot limits. Each message can cost a Gemini request, so bursts and
- * sustained use are both capped per client address.
+ * Chatbot limits, per client address.
+ *
+ * - chatBurstLimiter guards the route itself (every message, including the
+ *   instant answers served from the verified profile).
+ * - chatAiMinuteLimiter / chatAiDailyLimiter are applied by the controller
+ *   only when a message actually needs Gemini, so cheap static answers never
+ *   burn the paid budget, and the paid budget can never be exceeded.
  */
-const CHAT_LIMIT_MESSAGE = "You're sending messages too quickly. Please try again in a moment.";
+const CHAT_LIMIT_MESSAGE = "You're sending messages too quickly. Please wait a moment.";
 
 export const chatBurstLimiter = rateLimit({
   ...baseOptions,
   windowMs: 60 * 1000,
-  limit: 8,
-  handler: jsonLimitResponse(CHAT_LIMIT_MESSAGE),
+  limit: 15,
+  handler: jsonLimitResponse(CHAT_LIMIT_MESSAGE, "CHAT_RATE_LIMITED"),
 });
 
-export const chatDailyLimiter = rateLimit({
+export const chatAiMinuteLimiter = rateLimit({
+  ...baseOptions,
+  windowMs: 60 * 1000,
+  limit: 8,
+  handler: jsonLimitResponse(CHAT_LIMIT_MESSAGE, "CHAT_RATE_LIMITED"),
+});
+
+export const chatAiDailyLimiter = rateLimit({
   ...baseOptions,
   windowMs: 24 * 60 * 60 * 1000,
   limit: 100,
-  handler: jsonLimitResponse("You've reached today's chat limit. Please use the Contact section to reach Anup."),
+  handler: jsonLimitResponse(
+    "You've reached today's chat limit. Please use the Contact section to reach Anup.",
+    "CHAT_DAILY_LIMIT"
+  ),
 });

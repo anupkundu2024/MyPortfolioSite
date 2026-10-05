@@ -41,10 +41,12 @@ export const buildApiUrl = (path, params) => {
 };
 
 export class ApiError extends Error {
-  constructor(message, status) {
+  constructor(message, status, code = null) {
     super(message);
     this.name = "ApiError";
     this.status = status;
+    // Machine-readable code from the backend's `{ error: { code } }`, when present.
+    this.code = code;
   }
 }
 
@@ -58,7 +60,7 @@ const FALLBACK_MESSAGES = {
 };
 
 const messageFor = (status, payload) =>
-  payload?.message || FALLBACK_MESSAGES[status] || "Something went wrong. Please try again.";
+  payload?.error?.message || payload?.message || FALLBACK_MESSAGES[status] || "Something went wrong. Please try again.";
 
 export const apiRequest = async (path, { method = "GET", body, signal } = {}) => {
   const headers = {};
@@ -76,8 +78,8 @@ export const apiRequest = async (path, { method = "GET", body, signal } = {}) =>
       signal,
     });
   } catch (error) {
-    if (error?.name === "AbortError") throw error;
-    throw new ApiError(FALLBACK_MESSAGES[0], 0);
+    if (error?.name === "AbortError" || signal?.aborted) throw error;
+    throw new ApiError(FALLBACK_MESSAGES[0], 0, "NETWORK_ERROR");
   }
 
   let payload = null;
@@ -88,7 +90,8 @@ export const apiRequest = async (path, { method = "GET", body, signal } = {}) =>
   }
 
   if (!response.ok) {
-    throw new ApiError(messageFor(response.status, payload), response.status);
+    const code = typeof payload?.error?.code === "string" ? payload.error.code : null;
+    throw new ApiError(messageFor(response.status, payload), response.status, code);
   }
 
   return payload?.data ?? payload;

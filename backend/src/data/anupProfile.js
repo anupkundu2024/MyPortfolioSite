@@ -16,9 +16,17 @@ export const ANUP_PROFILE = Object.freeze({
   name: "Anup Kundu",
   role: "Full-Stack Developer (MERN stack)",
   education: "Final-year B.Tech student in Computer Science & Engineering",
+  // The portfolio does not name the institution, graduation date or grades.
+  educationNote: "The portfolio does not list the name of his college/university, his graduation date or his grades.",
   location: "Kolkata, West Bengal, India",
   summary:
     "Full-stack developer and final-year Computer Science & Engineering student who builds practical web applications with the MERN stack (MongoDB, Express.js, React, Node.js) and uses AI tools to speed up development. Focus areas: modular backend architecture, clean REST APIs, secure authentication, and responsive, mobile-first user interfaces.",
+
+  // Verified absence: the portfolio lists no employment or internship history.
+  experienceNote:
+    "The portfolio lists no employment history and no completed internships; his experience shown is through his own projects.",
+
+  cv: "His CV is available on the portfolio through the CV / Download CV button (a quick sign-in is required to open or download it).",
 
   availability:
     "Open to software engineering internships and junior developer roles (full-stack and frontend). Available for immediate full-stack and frontend contributions.",
@@ -181,7 +189,8 @@ export function buildKnowledgeText(profile = ANUP_PROFILE) {
   return [
     `Name: ${profile.name}`,
     `Role: ${profile.role}`,
-    `Education: ${profile.education}`,
+    `Education: ${profile.education}. ${profile.educationNote}`,
+    `Experience: ${profile.experienceNote}`,
     `Location: ${profile.location}`,
     `Summary: ${profile.summary}`,
     `Availability: ${profile.availability}`,
@@ -208,5 +217,6 @@ export function buildKnowledgeText(profile = ANUP_PROFILE) {
     "## Links & contact",
     ...Object.entries(profile.links).map(([kind, value]) => `${kind}: ${value}`),
     profile.contact,
+    profile.cv,
   ].join("\n");
 }

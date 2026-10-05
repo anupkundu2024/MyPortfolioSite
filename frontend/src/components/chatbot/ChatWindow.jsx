@@ -1,19 +1,92 @@
 import { useEffect, useId, useRef, useState } from "react";
-import { Loader2, Send, Sparkles, X } from "lucide-react";
+import { Loader2, RotateCcw, Send, Sparkles, X } from "lucide-react";
 import { ChatMessage } from "./ChatMessage";
 import { SuggestedQuestions } from "./SuggestedQuestions";
-import { MAX_MESSAGE_LENGTH } from "./chatLimits";
+import { MAX_MESSAGE_LENGTH, SLOW_HINT_MS } from "./chatLimits";
+
+const MOBILE_QUERY = "(max-width: 639px)";
+
+/**
+ * On phones, keeps the bottom sheet above the on-screen keyboard: iOS Safari
+ * (and Chrome on Android by default) shrink only the *visual* viewport when
+ * the keyboard opens, so a `bottom: 0` sheet would sit behind it.
+ */
+function useKeyboardInset(active) {
+  const [inset, setInset] = useState(null);
+
+  useEffect(() => {
+    const viewport = window.visualViewport;
+    if (!active || !viewport) return undefined;
+    const mobile = window.matchMedia(MOBILE_QUERY);
+
+    const update = () => {
+      if (!mobile.matches) return setInset(null);
+      const keyboard = Math.max(0, window.innerHeight - viewport.height - viewport.offsetTop);
+      setInset(keyboard > 80 ? { bottom: keyboard, maxHeight: viewport.height - 8 } : null);
+    };
+
+    update();
+    viewport.addEventListener("resize", update);
+    viewport.addEventListener("scroll", update);
+    mobile.addEventListener("change", update);
+    return () => {
+      viewport.removeEventListener("resize", update);
+      viewport.removeEventListener("scroll", update);
+      mobile.removeEventListener("change", update);
+    };
+  }, [active]);
+
+  return inset;
+}
+
+/** "Anup AI is thinking..." with a subtle typing animation. */
+function TypingIndicator() {
+  const [slow, setSlow] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setSlow(true), SLOW_HINT_MS);
+    return () => clearTimeout(timer);
+  }, []);
+
+  return (
+    <div role="status" className="flex justify-start">
+      <div className="flex items-center gap-2.5 rounded-2xl rounded-bl-md border border-border/60 bg-secondary/70 px-3.5 py-2.5 text-xs text-muted-foreground">
+        <span className="flex items-center gap-1" aria-hidden="true">
+          {[0, 150, 300].map((delay) => (
+            <span
+              key={delay}
+              className="h-1.5 w-1.5 rounded-full bg-primary/80 animate-bounce"
+              style={{ animationDelay: `${delay}ms` }}
+            />
+          ))}
+        </span>
+        <span>{slow ? "Still thinking — the server may be waking up..." : "Anup AI is thinking..."}</span>
+      </div>
+    </div>
+  );
+}
 
 /**
  * Chat panel UI. Desktop: floating panel bottom-right. Mobile: bottom sheet
  * that leaves the navbar visible. Non-modal, so the page stays usable.
  */
-export function ChatWindow({ open, onClose, messages, pending, showSuggestions, onSend, onRetry }) {
+export function ChatWindow({
+  open,
+  onClose,
+  messages,
+  pending,
+  showSuggestions,
+  canReset,
+  onSend,
+  onRetry,
+  onReset,
+}) {
   const titleId = useId();
   const [draft, setDraft] = useState("");
   const inputRef = useRef(null);
   const listRef = useRef(null);
   const panelRef = useRef(null);
+  const keyboardInset = useKeyboardInset(open);
 
   // Focus the input when opened.
   useEffect(() => {
@@ -30,11 +103,11 @@ export function ChatWindow({ open, onClose, messages, pending, showSuggestions, 
     return () => document.removeEventListener("keydown", onKeyDown);
   }, [open, onClose]);
 
-  // Keep the newest message in view.
+  // Keep the newest message in view (also when the keyboard resizes the sheet).
   useEffect(() => {
     const list = listRef.current;
     if (list) list.scrollTo({ top: list.scrollHeight, behavior: "smooth" });
-  }, [messages, pending, open]);
+  }, [messages, pending, open, keyboardInset]);
 
   // Grow the textarea with its content, up to ~5 lines.
   useEffect(() => {
@@ -48,6 +121,12 @@ export function ChatWindow({ open, onClose, messages, pending, showSuggestions, 
     if (!text.trim() || pending) return;
     onSend(text);
     setDraft("");
+  };
+
+  const startNewChat = () => {
+    onReset();
+    setDraft("");
+    requestAnimationFrame(() => inputRef.current?.focus());
   };
 
   const handleKeyDown = (event) => {
@@ -73,6 +152,7 @@ export function ChatWindow({ open, onClose, messages, pending, showSuggestions, 
         inset-x-0 bottom-0 h-[min(85dvh,640px)] rounded-t-3xl
         sm:inset-x-auto sm:bottom-6 sm:right-6 sm:w-[390px] sm:h-[min(620px,calc(100dvh-8rem))] sm:rounded-2xl
         animate-in fade-in-0 slide-in-from-bottom-4 duration-200`}
+      style={keyboardInset || undefined}
     >
       {/* Ambient theme glow, purely decorative */}
       <div
@@ -91,6 +171,17 @@ export function ChatWindow({ open, onClose, messages, pending, showSuggestions, 
           </h2>
           <p className="truncate text-xs text-muted-foreground">Ask me about Anup Kundu</p>
         </div>
+        {canReset && (
+          <button
+            type="button"
+            onClick={startNewChat}
+            aria-label="Start a new chat"
+            title="New chat"
+            className="rounded-full p-2 text-muted-foreground transition-colors hover:bg-white/5 hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          >
+            <RotateCcw className="h-4 w-4" />
+          </button>
+        )}
         <button
           type="button"
           onClick={onClose}
@@ -124,12 +215,7 @@ export function ChatWindow({ open, onClose, messages, pending, showSuggestions, 
 
         {showSuggestions && <SuggestedQuestions onSelect={submit} disabled={pending} />}
 
-        {pending && (
-          <div role="status" className="flex items-center gap-2 text-xs text-muted-foreground">
-            <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" aria-hidden="true" />
-            <span>Anup AI is thinking...</span>
-          </div>
-        )}
+        {pending && <TypingIndicator />}
       </div>
 
       {/* Input */}
@@ -153,7 +239,8 @@ export function ChatWindow({ open, onClose, messages, pending, showSuggestions, 
             onChange={(event) => setDraft(event.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Ask about skills, projects, availability…"
-            className="max-h-[120px] min-h-[42px] flex-1 resize-none rounded-xl border border-border/60 bg-background/60 px-3.5 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/70 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+            // 16px on phones so iOS doesn't zoom the page when the input is focused.
+            className="max-h-[120px] min-h-[42px] flex-1 resize-none rounded-xl border border-border/60 bg-background/60 px-3.5 py-2.5 text-base sm:text-sm text-foreground placeholder:text-muted-foreground/70 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
           />
           <button
             type="submit"
